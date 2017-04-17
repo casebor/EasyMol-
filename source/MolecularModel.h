@@ -35,12 +35,12 @@ class Atom{
      */
     public:
 	
-	Atom(std::string at_name, int at_index, std::string at_symbol, float at_pos[3], Residue* at_resid);
+	Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid);
 	
 	float* pos;
         int index;
         std::string name;
-        std::string symbol;
+        //std::string symbol;
 	Residue* resid;
 	float color[];
 	float col_rgb[];

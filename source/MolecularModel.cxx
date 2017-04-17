@@ -29,14 +29,14 @@
 #include "MolecularModel.h"
 
 
-Atom::Atom(std::string at_name, int at_index, std::string at_symbol, float at_pos[3], Residue* at_resid){
+Atom::Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid){
     /*
      * 
      */
     
     name = at_name;
     index = at_index;
-    symbol = at_symbol;
+    //symbol = at_symbol;
     pos[0] = at_pos[0]; pos[1] = at_pos[1]; pos[2] = at_pos[2];
     resid = at_resid;
     color[0] = 0; color[1] = 1; color[2] = 0;
