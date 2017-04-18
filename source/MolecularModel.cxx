@@ -29,7 +29,8 @@
 #include "MolecularModel.h"
 
 
-Atom::Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid){
+//Atom::Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid){
+Atom::Atom(std::string at_name, int at_index, float at_pos[3]){
     /*
      * 
      */
@@ -38,7 +39,7 @@ Atom::Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid
     index = at_index;
     //symbol = at_symbol;
     pos[0] = at_pos[0]; pos[1] = at_pos[1]; pos[2] = at_pos[2];
-    resid = at_resid;
+    //resid = at_resid;
     color[0] = 0; color[1] = 1; color[2] = 0;
     col_rgb[0] = 0; col_rgb[1] = 1; col_rgb[2] = 0;
     radius = 2.5;
@@ -59,6 +60,13 @@ Residue::Residue(std::vector<Atom> r_atoms, std::string r_name, int r_index, Cha
     chain = r_chain;
 }
 
+Residue::Residue(){
+    /*
+     * 
+     */
+    
+}
+
 Chain::Chain(char ch_name, std::vector<Residue> ch_residues, Frame* ch_frame){
     /*
      * 
@@ -68,6 +76,15 @@ Chain::Chain(char ch_name, std::vector<Residue> ch_residues, Frame* ch_frame){
     frame = ch_frame;
 }
 
+Chain::Chain(){
+    /*
+     * 
+     */
+    //name = ch_name;
+    //residues = ch_residues;
+    //frame = ch_frame;
+}
+
 Frame::Frame(std::vector<Chain> f_chains, float f_mass_center[]){
     /*
      * 
@@ -75,6 +92,15 @@ Frame::Frame(std::vector<Chain> f_chains, float f_mass_center[]){
     
     chains = f_chains;
     mass_center[0] = f_mass_center[0]; mass_center[1] = f_mass_center[1]; mass_center[2] = f_mass_center[2]; 
+    //atoms = {};
+}
+
+Frame::Frame(){
+    /*
+     * 
+     */
+    
+    mass_center[0] = 0; mass_center[1] = 0; mass_center[2] = 0; 
     //atoms = {};
 }
 

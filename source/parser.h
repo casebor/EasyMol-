@@ -25,7 +25,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-std::vector<float> parse_pdb(std::string file_path);
+Frame parse_pdb(std::string file_path);
 
 
 #endif

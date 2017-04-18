@@ -28,15 +28,15 @@
 #include <sstream>
 #include <vector>
 
-#include "parser.h"
 #include "MolecularModel.h"
+#include "functions.h"
+#include "parser.h"
 
 //std::vector<float> parse_pdb(std::string file_path){
 Frame parse_pdb(std::string file_path){
     /*
      * 
      */
-    Frame pdb_frame;
     std::ifstream my_file (file_path);
     std::vector<std::string> file_list;
     std::string line;
@@ -51,8 +51,10 @@ Frame parse_pdb(std::string file_path){
     int at_index, at_res_index;
     std::stringstream ss;
     std::string at_name, at_res_name;
-    Chain pdb_chain;
+    Frame pdb_frame = Frame();
+    Chain pdb_chain = Chain();
     std::vector<Residue> chain_resids;
+    std::vector<Atom> pdb_atoms;
     Residue resid;
     
     for (int i = 0; i < file_list.size(); i++){
@@ -65,12 +67,10 @@ Frame parse_pdb(std::string file_path){
 	    ss << file_list[i].substr(30, 8); ss >> pos_x; ss.clear();
 	    ss << file_list[i].substr(38, 8); ss >> pos_y; ss.clear();
 	    ss << file_list[i].substr(46, 8); ss >> pos_z; ss.clear();
-	    Atom atomo = Atom(at_name, at_index, at_pos, at_res_index);
 	    
-	    
-	    pdb_atoms.push_back(pos_x);
-	    pdb_atoms.push_back(pos_y);
-	    pdb_atoms.push_back(pos_z);
+	    float pos_xyz[3] = {pos_x, pos_y, pos_z};
+	    Atom atomo = Atom(at_name, at_index, pos_xyz);
+	    pdb_atoms.push_back(atomo);
 	    
 	}
 	else{

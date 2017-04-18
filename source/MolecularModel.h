@@ -35,7 +35,8 @@ class Atom{
      */
     public:
 	
-	Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid);
+	//Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid);
+	Atom(std::string at_name, int at_index, float at_pos[3]);
 	
 	float* pos;
         int index;
@@ -59,6 +60,7 @@ class Residue{
     public:
 	
 	Residue(std::vector<Atom> r_atoms, std::string r_name, int r_index, Chain* r_chain);
+	Residue();
 	
 	std::vector<Atom> atoms;
         std::string name;
@@ -74,6 +76,7 @@ class Chain{
     public:
 	
 	Chain(char ch_name, std::vector<Residue> ch_residues, Frame* ch_frame);
+	Chain();
 	
         char name;
 	std::vector<Residue> residues;
@@ -90,6 +93,7 @@ class Frame{
     public:
 	
 	Frame(std::vector<Chain> f_chains, float f_mass_center[]);
+	Frame();
 	
 	std::vector<Chain> chains;
         float* mass_center;
