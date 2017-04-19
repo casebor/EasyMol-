@@ -24,10 +24,20 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
+#define PI 3.14159265358979323846
+
 template <typename T, typename T2>
 std::vector<T> get_keys(std::map<T, T2> map_t);
 
 template <typename T, typename T2>
 std::vector<T2> get_values(std::map<T, T2> map_t);
+
+std::array<float, 3> unit_vector(std::array<float, 3> vec);
+
+float get_angle(std::array<float, 3> vec_a, std::array<float, 3> vec_b);
+
+std::array<float, 3> cross_p(std::array<float, 3> vec_a, std::array<float, 3> vec_b);
+
+std::vector<bond> generate_bonds(std::vector<Atom> atoms);
 
 #endif

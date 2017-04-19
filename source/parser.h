@@ -21,11 +21,9 @@
  * 
  */
 
-
 #ifndef PARSER_H
 #define PARSER_H
 
 Frame parse_pdb(std::string file_path);
-
 
 #endif

@@ -21,9 +21,12 @@
  * 
  */
 
+#include <iostream>
 #include <vector>
+#include <cmath>
 #include <map>
 
+#include "MolecularModel.h"
 #include "functions.h"
 
 template <typename T, typename T2>
@@ -33,7 +36,6 @@ std::vector<T> get_keys(std::map<T, T2> map_t){
     for(auto const& elem: map_t)
 	keys.push_back(elem.first);
     return keys;
-    
 }
 
 template <typename T, typename T2>
@@ -43,6 +45,86 @@ std::vector<T2> get_values(std::map<T, T2> map_t){
     for(auto const& elem: map_t)
 	values.push_back(elem.second);
     return values;
-    
+}
+
+std::array<float, 3> unit_vector(std::array<float, 3> vec){
+    /*
+     * 
+     */
+    std::array<float, 3> u_vec;
+    float module = std::sqrt(std::pow(vec[0], 2) + std::pow(vec[1], 2) + std::pow(vec[2], 2));
+    u_vec[0] = vec[0]/module;
+    u_vec[1] = vec[1]/module;
+    u_vec[2] = vec[2]/module;
+    return u_vec;
+}
+
+float get_angle(std::array<float, 3> vec_a, std::array<float, 3> vec_b){
+    /*
+     * 
+     */
+    std::array<float, 3> vec_ua = unit_vector(vec_a);
+    std::array<float, 3> vec_ub = unit_vector(vec_b);
+    float dot_product = vec_ua[0]*vec_ub[0] + vec_ua[1]*vec_ub[1] + vec_ua[2]*vec_ub[2];
+    float angle = std::acos(dot_product);
+    return angle * 180.0 / PI;
+}
+
+std::array<float, 3> cross_p(std::array<float, 3> vec_a, std::array<float, 3> vec_b){
+    /*
+     * 
+     */
+    std::array<float, 3> vec_o;
+    vec_o[0] = vec_a[1]*vec_b[2] - vec_a[2]*vec_b[1];
+    vec_o[0] = vec_a[2]*vec_b[0] - vec_a[0]*vec_b[2];
+    vec_o[0] = vec_a[0]*vec_b[1] - vec_a[1]*vec_b[0];
+    return unit_vector(vec_o);
+}
+
+std::vector<bond> generate_bonds(std::vector<Atom> atoms){
+    /*
+     * 
+     */
+    std::vector<bond> bonds;
+    std::array<float, 3> array1 = {0.0, 0.0, 1.0};
+    for (int i = 0; i < atoms.size()-1; i++){
+	int limit;
+	if (i+25 >= atoms.size())
+	    limit = atoms.size();
+	else
+	    limit = i+25;
+	for (int j = i+1; j < limit; j++){
+	    if (atoms[j].pos[0] - atoms[i].pos[0] >= 2.0 ||
+		atoms[j].pos[1] - atoms[i].pos[1] >= 2.0 ||
+		atoms[j].pos[2] - atoms[i].pos[2] >= 2.0 ){
+		// Do nothing
+	    }
+	    else{
+		std::array<float, 3> v_dist = {atoms[j].pos[0] - atoms[i].pos[0], atoms[j].pos[1] - atoms[i].pos[1], atoms[j].pos[2] - atoms[i].pos[2]};
+		float dist2 = std::pow(v_dist[0], 2) + std::pow(v_dist[1], 2) + std::pow(v_dist[2], 2);
+		if (dist2 <= (std::pow(atoms[j].cov_rad + atoms[i].cov_rad, 2)) * 1.1){
+		    float sqrt_dist2 = std::sqrt(dist2);
+		    std::array<float, 3> v_dir = unit_vector(v_dist);
+		    bond p_bond, q_bond;
+		    p_bond.atm = atoms[i];
+		    p_bond.length = sqrt_dist2 / 2.0;
+		    p_bond.angle = get_angle(array1, v_dir);
+		    p_bond.vec_ort = cross_p(array1, v_dir);
+		    for (short k = 0; k < 3; i++){
+			p_bond.midpoint[k] = (atoms[j].pos[k] + atoms[i].pos[k]) / 2.0;
+			q_bond.midpoint[k] = p_bond.midpoint[k];
+		    }
+		    q_bond.atm = atoms[i];
+		    q_bond.length = sqrt_dist2 - p_bond.length;
+		    q_bond.angle = p_bond.angle + 180.0;
+		    q_bond.vec_ort = p_bond.vec_ort;
+		    
+		    bonds.push_back(p_bond);
+		    bonds.push_back(q_bond);
+		}
+	    }
+	}
+    }
+    return bonds;
 }
 

@@ -32,12 +32,27 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <array>
+#include <map>
 
 #include "MyDrawArea.h"
 #include "MolecularModel.h"
 #include "parser.h"
+#include "functions.h"
 
-int main(int argc, char **argv){
+//void print_frame(Frame my_frame){
+    //Chain ch_temp = my_frame.chains['A'];
+    //for (Residue & res : get_values(ch_temp.residues)){
+	//for (Atom & atm : get_values(res.atoms)){
+	    //std::cout << "Name: " << atm.name;
+	    //std::cout << " Index: " << atm.index;
+	    //std::cout << " Residue: " << res.name;
+	    //std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
+	//}
+    //}
+//}
+
+int main(int argc, char *argv[]){
     
     // Initialize the gtk, glut and gtkglext libraries.
     // IS VERY IMPORTANT THAT THIS LINES BE AT THE TOP OF MAIN FUNCTION!!!
@@ -51,8 +66,19 @@ int main(int argc, char **argv){
     MyDrawArea prueba;
     
     if (argv[1]!=NULL){
-	//std::string file_path = "alanine.pdb";
 	Frame parsed_file = parse_pdb(argv[1]);
+	//print_frame(parsed_file);
+	Chain ch_temp = parsed_file.chains['A'];
+	for (Residue & res : get_values(ch_temp.residues)){
+	    for (Atom & atm : get_values(res.atoms)){
+		std::cout << "Name: " << atm.name;
+		std::cout << " Index: " << atm.index;
+		std::cout << " Residue: " << res.name;
+		std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
+	    }
+	}
+	//parsed_file.bonds = generate_bonds(parsed_file.atoms);
+	//std::cout << parsed_file.chains['A'].residues[1].atoms[3].name << std::endl;
     }
     else{
 	std::cout << "No pdb or incorrect pdb file passed" << std::endl;
@@ -60,16 +86,16 @@ int main(int argc, char **argv){
     }
     
     
-    //window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     
-    //gtk_widget_set_size_request (prueba.self_drawing_area, 200, 200);
+    gtk_widget_set_size_request (prueba.self_drawing_area, 200, 200);
     
-    //gtk_container_add (GTK_CONTAINER (window), prueba.self_drawing_area);
+    gtk_container_add (GTK_CONTAINER (window), prueba.self_drawing_area);
     
-    //gtk_widget_show (prueba.self_drawing_area);
-    //gtk_widget_show (window);
+    gtk_widget_show (prueba.self_drawing_area);
+    gtk_widget_show (window);
     
-    //gtk_main ();
+    gtk_main ();
     
     return 0;
 }

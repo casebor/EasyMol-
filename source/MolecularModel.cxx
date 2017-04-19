@@ -21,25 +21,36 @@
  * 
  */
 
-
-#include <iostream>
 #include <string>
 #include <vector>
+#include <array>
+#include <map>
 
 #include "MolecularModel.h"
 
-
-//Atom::Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid){
-Atom::Atom(std::string at_name, int at_index, float at_pos[3]){
+Atom::Atom(std::string at_name, int at_index, std::array<float, 3> at_pos){
     /*
      * 
      */
     
     name = at_name;
     index = at_index;
-    //symbol = at_symbol;
-    pos[0] = at_pos[0]; pos[1] = at_pos[1]; pos[2] = at_pos[2];
-    //resid = at_resid;
+    pos = at_pos;
+    color[0] = 0; color[1] = 1; color[2] = 0;
+    col_rgb[0] = 0; col_rgb[1] = 1; col_rgb[2] = 0;
+    radius = 2.5;
+    vdw_rad = 2.0;
+    cov_rad = 1.7;
+    ball_radius = 1.4;
+    sphere = false;
+    dot = true;
+}
+
+Atom::Atom(){
+    /*
+     * 
+     */
+    
     color[0] = 0; color[1] = 1; color[2] = 0;
     col_rgb[0] = 0; col_rgb[1] = 1; col_rgb[2] = 0;
     radius = 2.5;
@@ -50,14 +61,14 @@ Atom::Atom(std::string at_name, int at_index, float at_pos[3]){
     dot = true;
 }
 
-Residue::Residue(std::vector<Atom> r_atoms, std::string r_name, int r_index, Chain* r_chain){
+Residue::Residue(std::string r_name, std::map<int, Atom> r_atoms, int r_index){
     /*
      * 
      */
-    atoms = r_atoms;
     name = r_name;
+    atoms = r_atoms;
     index = r_index;
-    chain = r_chain;
+    //chain = r_chain;
 }
 
 Residue::Residue(){
@@ -67,13 +78,13 @@ Residue::Residue(){
     
 }
 
-Chain::Chain(char ch_name, std::vector<Residue> ch_residues, Frame* ch_frame){
+Chain::Chain(char ch_name, std::map<int, Residue> ch_residues){
     /*
      * 
      */
     name = ch_name;
     residues = ch_residues;
-    frame = ch_frame;
+    //frame = ch_frame;
 }
 
 Chain::Chain(){
@@ -85,13 +96,13 @@ Chain::Chain(){
     //frame = ch_frame;
 }
 
-Frame::Frame(std::vector<Chain> f_chains, float f_mass_center[]){
+Frame::Frame(std::map<char, Chain> f_chains, std::array<float, 3> f_mass_center){
     /*
      * 
      */
     
     chains = f_chains;
-    mass_center[0] = f_mass_center[0]; mass_center[1] = f_mass_center[1]; mass_center[2] = f_mass_center[2]; 
+    mass_center = f_mass_center;
     //atoms = {};
 }
 
@@ -108,7 +119,6 @@ void Frame::load_bonds(){
     /*
      * 
      */
-    
 }
 
 void Frame::load_ribbons(){
@@ -117,3 +127,4 @@ void Frame::load_ribbons(){
      */
     
 }
+

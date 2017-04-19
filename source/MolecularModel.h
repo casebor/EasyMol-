@@ -35,16 +35,15 @@ class Atom{
      */
     public:
 	
-	//Atom(std::string at_name, int at_index, float at_pos[3], Residue* at_resid);
-	Atom(std::string at_name, int at_index, float at_pos[3]);
+	Atom(std::string at_name, int at_index, std::array<float, 3> at_pos);
+	Atom();
 	
-	float* pos;
-        int index;
         std::string name;
-        //std::string symbol;
-	Residue* resid;
-	float color[];
-	float col_rgb[];
+        int index;
+	std::array<float, 3> pos;
+        std::string symbol;
+	std::array<float, 3> color;
+	std::array<float, 3> col_rgb;
 	float radius;
 	float vdw_rad;
 	float cov_rad;
@@ -59,14 +58,12 @@ class Residue{
      */
     public:
 	
-	Residue(std::vector<Atom> r_atoms, std::string r_name, int r_index, Chain* r_chain);
+	Residue(std::string r_name, std::map<int, Atom> r_atoms, int r_index);
 	Residue();
 	
-	std::vector<Atom> atoms;
         std::string name;
+	std::map<int, Atom> atoms;
         int index;
-        Chain* chain;
-    
 };
 
 class Chain{
@@ -75,14 +72,19 @@ class Chain{
      */
     public:
 	
-	Chain(char ch_name, std::vector<Residue> ch_residues, Frame* ch_frame);
+	Chain(char ch_name, std::map<int, Residue> ch_residues);
 	Chain();
 	
         char name;
-	std::vector<Residue> residues;
-	Frame* frame;
-	//backbone;
-    
+	std::map<int, Residue> residues;
+};
+
+struct bond{
+    Atom atm;
+    float length;
+    float angle;
+    std::array<float, 3> vec_ort;
+    std::array<float, 3> midpoint;
 };
 
 class Frame{
@@ -92,12 +94,13 @@ class Frame{
     
     public:
 	
-	Frame(std::vector<Chain> f_chains, float f_mass_center[]);
+	Frame(std::map<char, Chain> f_chains, std::array<float, 3> f_mass_center);
 	Frame();
 	
-	std::vector<Chain> chains;
-        float* mass_center;
+	std::map<char, Chain> chains;
+        std::array<float, 3> mass_center;
 	std::vector<Atom> atoms;
+	std::vector<bond> bonds;
 	
 	void load_bonds();
 	void load_ribbons();
