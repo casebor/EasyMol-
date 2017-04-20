@@ -35,8 +35,8 @@
 #include <array>
 #include <map>
 
-#include "MyDrawArea.h"
 #include "MolecularModel.h"
+#include "MyDrawArea.h"
 #include "parser.h"
 #include "functions.h"
 
@@ -68,22 +68,32 @@ int main(int argc, char *argv[]){
     if (argv[1]!=NULL){
 	Frame parsed_file = parse_pdb(argv[1]);
 	//print_frame(parsed_file);
-	Chain ch_temp = parsed_file.chains['A'];
-	for (Residue & res : get_values(ch_temp.residues)){
-	    for (Atom & atm : get_values(res.atoms)){
-		std::cout << "Name: " << atm.name;
-		std::cout << " Index: " << atm.index;
-		std::cout << " Residue: " << res.name;
-		std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
-	    }
-	}
+	//Chain ch_temp = parsed_file.chains['A'];
+	//for (Residue & res : get_values(ch_temp.residues)){
+	    //for (Atom & atm : get_values(res.atoms)){
+		//std::cout << "Name: " << atm.name;
+		//std::cout << " Index: " << atm.index;
+		//std::cout << " Residue: " << res.name;
+		//std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
+	    //}
+	//}
 	//parsed_file.bonds = generate_bonds(parsed_file.atoms);
 	//std::cout << parsed_file.chains['A'].residues[1].atoms[3].name << std::endl;
+	//for (int j = 0; j < parsed_file.atoms.size(); j++){
+	    //std::cout << parsed_file.atoms[j].name << std::endl;
+	//}
+	prueba.self_data_frames = parsed_file;
+	//for (int i = 0; i < parsed_file.chains['A'].residues.size(); i++){
+	    //for (int j = 0; j < parsed_file.chains['A'].residues[i].atoms.size(); j++){
+		//std::cout << parsed_file.chains['A'].residues[i].atoms[j].name << std::endl;
+	    //}
+	//}
     }
     else{
 	std::cout << "No pdb or incorrect pdb file passed" << std::endl;
 	return 0;
     }
+    
     
     
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

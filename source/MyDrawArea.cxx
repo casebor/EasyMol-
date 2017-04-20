@@ -29,6 +29,12 @@
 #include <GL/glut.h>
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <array>
+#include <map>
+#include "MolecularModel.h"
 #include "MyDrawArea.h"
 
 
@@ -52,7 +58,25 @@ GLfloat MyDrawArea::self_bckgrnd_color[] = {0.0, 0.0, 0.0, 0.0};
 GLdouble MyDrawArea::self_fovy = 30.0;
 GLdouble MyDrawArea::self_z_near = 1.0;
 GLdouble MyDrawArea::self_z_far = 10.0;
+// Mouse settings
+bool MyDrawArea::self_mouse_rotate = false;
+bool MyDrawArea::self_mouse_zoom = false;
+bool MyDrawArea::self_mouse_pan = false;
+bool MyDrawArea::self_dragging = false;
+double MyDrawArea::self_mouse_x = 0.0;
+double MyDrawArea::self_mouse_y = 0.0;
+double MyDrawArea::self_drag_pos_x = 0.0;
+double MyDrawArea::self_drag_pos_y = 0.0;
+double MyDrawArea::self_drag_pos_z = 0.0;
+double MyDrawArea::self_pos_mouse[2] = {0.0, 0.0};
+// Viewport settings
+double MyDrawArea::self_left = -10.0;
+double MyDrawArea::self_right = 10.0;
+double MyDrawArea::self_top = 1.0;
+double MyDrawArea::self_bottom = -1.0;
 
+
+Frame MyDrawArea::self_data_frames;
 
 MyDrawArea::MyDrawArea(){
     
@@ -68,7 +92,17 @@ MyDrawArea::MyDrawArea(){
     g_signal_connect_after(G_OBJECT(self_drawing_area), "realize", G_CALLBACK(this->realize), NULL);
     g_signal_connect(G_OBJECT(self_drawing_area), "configure_event", G_CALLBACK(this->reshape_wind), NULL);
     g_signal_connect(G_OBJECT(self_drawing_area), "expose_event", G_CALLBACK(this->my_draw), NULL);
+    g_signal_connect(G_OBJECT(self_drawing_area), "button_press_event", G_CALLBACK(this->mouse_pressed), NULL);
+    g_signal_connect(G_OBJECT(self_drawing_area), "button_release_event", G_CALLBACK(this->mouse_released), NULL);
+    g_signal_connect(G_OBJECT(self_drawing_area), "motion_notify_event", G_CALLBACK(this->mouse_motion), NULL);
+    g_signal_connect(G_OBJECT(self_drawing_area), "scroll_event", G_CALLBACK(this->mouse_scroll), NULL);
+    g_signal_connect(G_OBJECT(self_drawing_area), "key_press_event", G_CALLBACK(this->key_press), NULL);
     
+    gtk_widget_set_events(self_drawing_area, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+            GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK |
+            GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
+    gtk_widget_set_can_focus(self_drawing_area, TRUE);
+    gtk_widget_grab_focus(self_drawing_area);
 }
 
 void MyDrawArea::realize(GtkWidget *widget, gpointer data){
@@ -186,7 +220,142 @@ void MyDrawArea::draw(GtkWidget *widget){
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube2[0], cube2[1], cube2[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube3[0], cube3[1], cube3[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube0[0], cube0[1], cube0[2]);
+    
     glEnd();
 }
 
+gboolean MyDrawArea::mouse_pressed(GtkWidget *widget, GdkEventButton *event, gpointer data){
+    /*
+     * The actual drawing goes here.
+     */
+    bool m_left = false, m_middle = false, m_right = false;
+    double m_x, m_y;
+    if (event->button == 1){
+	std::cout << "left click pressed" << std::endl;
+	m_left = true;
+    }
+    if (event->button == 2){
+	std::cout << "middle click pressed" << std::endl;
+	m_middle = true;
+    }
+    if (event->button == 3){
+	std::cout << "right click pressed" << std::endl;
+	m_right = true;
+    }
+    self_mouse_rotate = m_left && !(m_middle || m_right);
+    self_mouse_zoom = m_right && !(m_middle || m_left);
+    self_mouse_pan = m_middle && !(m_left || m_right);
+    m_x = event->x;
+    m_y = event->y;
+    self_mouse_x = event->x;
+    self_mouse_y = event->y;
+    pos(m_x, m_y, self_drag_pos_x, self_drag_pos_y, self_drag_pos_z);
+    if ((event->button == 1) && (event->type == GDK_2BUTTON_PRESS)){
+	//nearest, hits = self.pick(x, self.get_allocation().height-1-y, self.pick_radius[0], self.pick_radius[1], event)
+	//selected = self.select(event, nearest, hits)
+    }
+    //if (selected != NULL){
+	//self.center_on_atom(selected.pos)
+	//self.zero_reference_point = selected.pos
+	//self.target_point = selected.pos
+    //}
+    if ((event->button == 2) && (event->type == GDK_BUTTON_PRESS)){
+	//self.dist_cam_zpr = op.get_euclidean(self.zero_reference_point, self.get_cam_pos());
+    }
+    if ((event->button == 1) && (event->type == GDK_BUTTON_PRESS)){
+	self_pos_mouse[0] = m_x;
+	self_pos_mouse[1] = m_y;
+    }
+    return true;
+}
 
+gboolean MyDrawArea::mouse_released(GtkWidget *widget, GdkEventButton *event, gpointer data){
+    /*
+     * 
+     */
+    self_mouse_pan = false;
+    self_mouse_rotate = false;
+    self_mouse_zoom = false;
+    double m_x, m_y;
+    m_x = event->x;
+    m_y = event->y;
+    self_mouse_x = event->x;
+    self_mouse_y = event->y;
+    pos(m_x, m_y, self_drag_pos_x, self_drag_pos_y, self_drag_pos_z);
+    if ((event->button == 1) && (event->type == GDK_BUTTON_RELEASE)){
+	if (self_dragging){
+	    self_dragging = false;
+	}
+	else{
+	    if (){
+		
+	    }
+	    
+	}
+	
+	
+    }
+    
+    std::cout << "mouse released" << std::endl;
+    return true;
+}
+
+gboolean MyDrawArea::mouse_motion(GtkWidget *widget, GdkEventMotion *event, gpointer data){
+    /*
+     * 
+     */
+    //std::cout << "mouse moved" << std::endl;
+    return true;
+}
+
+gboolean MyDrawArea::mouse_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer data){
+    /*
+     * 
+     */
+    std::cout << "mouse scrolled" << std::endl;
+    return true;
+}
+
+gboolean MyDrawArea::key_press(GtkWidget *widget, GdkEventKey *event, gpointer data){
+    /*
+     * 
+     */
+    std::cout << "key pressed" << std::endl;
+    return true;
+}
+
+void MyDrawArea::pos(double wind_x, double wind_y, double &px, double &py, double &pz){
+    /*
+     * 
+     */
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    px = (wind_x - viewport[0])/(viewport[2]);
+    py = (wind_y - viewport[1])/(viewport[3]);
+    px = self_left + px * (self_right - self_left);
+    py = self_top + py * (self_bottom - self_top);
+    pz = self_z_near;
+}
+
+bool MyDrawArea::draw_dots(){
+    /*
+     * 
+     */
+    //GLunit gl_dot_li = glGenLists(1);
+    //glNewList(gl_dot_li, GL_COMPILE);
+    //if (self_frame != NULL){
+	//for (int i = 0; i < self_frame.atoms.size(); i++){
+	    //glPushMatri();
+	    //glPushName(self_frame.atoms[i].index);
+	    //glColor3f(0.0, 1.0, 0.0);
+	    //glPointSize(5);
+	    //glBegin(GL_POINTS);
+	    //glVertex3f(self_frame.atoms[i].pos[0], self_frame.atoms[i].pos[1], self_frame.atoms[i].pos[2]);
+	    //glEnd();
+	    //glPopName();
+	    //plPopMatrix();
+	//}
+    //}
+    //glEndList;
+    return true;
+}
