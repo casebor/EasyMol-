@@ -58,6 +58,7 @@ GLfloat MyDrawArea::self_bckgrnd_color[] = {0.0, 0.0, 0.0, 0.0};
 GLdouble MyDrawArea::self_fovy = 30.0;
 GLdouble MyDrawArea::self_z_near = 1.0;
 GLdouble MyDrawArea::self_z_far = 10.0;
+double MyDrawArea::self_dist_cam_zpr = 0.0;
 // Mouse settings
 bool MyDrawArea::self_mouse_rotate = false;
 bool MyDrawArea::self_mouse_zoom = false;
@@ -74,6 +75,7 @@ double MyDrawArea::self_left = -10.0;
 double MyDrawArea::self_right = 10.0;
 double MyDrawArea::self_top = 1.0;
 double MyDrawArea::self_bottom = -1.0;
+double MyDrawArea::self_zero_reference_point[3] = {0.0, 0.0, 0.0};
 
 
 Frame MyDrawArea::self_data_frames;
@@ -167,7 +169,7 @@ gboolean MyDrawArea::reshape_wind(GtkWidget *widget, GdkEventConfigure *event, g
     GdkGLDrawable *gl_drawable = gtk_widget_get_gl_drawable (widget);
     
     if (!gdk_gl_drawable_gl_begin (gl_drawable, gl_context))
-	return false;
+        return false;
     glViewport (0, 0, widget->allocation.width, widget->allocation.height);
     
     glMatrixMode(GL_PROJECTION);
@@ -190,21 +192,21 @@ gboolean MyDrawArea::my_draw(GtkWidget *widget, GdkEventExpose *event, gpointer 
     glClearColor(0,0,0,0);
     glMatrixMode(GL_MODELVIEW);
     
-    draw(widget);
+    draw();
     
     if (!gdk_gl_drawable_gl_begin(gl_drawable, gl_context))
-	return false;
+        return false;
     
     if (gdk_gl_drawable_is_double_buffered (gl_drawable))
-	gdk_gl_drawable_swap_buffers(gl_drawable);
+        gdk_gl_drawable_swap_buffers(gl_drawable);
     else
-	glFlush ();
+        glFlush ();
     
     gdk_gl_drawable_gl_end (gl_drawable);
     return true;
 }
 
-void MyDrawArea::draw(GtkWidget *widget){
+void MyDrawArea::draw(){
     /*
      * The actual drawing goes here.
      */
@@ -214,14 +216,14 @@ void MyDrawArea::draw(GtkWidget *widget){
     float cube1[] = {-1, 0, 1};
     float cube2[] = {-1, 1, 1};
     float cube3[] = { 1, 1, 1};
-    glBegin(GL_LINE_STRIP);
+    glBegin(GL_TRIANGLES);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube0[0], cube0[1], cube0[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube1[0], cube1[1], cube1[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube2[0], cube2[1], cube2[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube3[0], cube3[1], cube3[2]);
     glColor3f(0.0, 1.0, 1.0); glVertex3f(cube0[0], cube0[1], cube0[2]);
-    
     glEnd();
+    
 }
 
 gboolean MyDrawArea::mouse_pressed(GtkWidget *widget, GdkEventButton *event, gpointer data){
@@ -231,16 +233,16 @@ gboolean MyDrawArea::mouse_pressed(GtkWidget *widget, GdkEventButton *event, gpo
     bool m_left = false, m_middle = false, m_right = false;
     double m_x, m_y;
     if (event->button == 1){
-	std::cout << "left click pressed" << std::endl;
-	m_left = true;
+        //std::cout << "left click pressed" << std::endl;
+        m_left = true;
     }
     if (event->button == 2){
-	std::cout << "middle click pressed" << std::endl;
-	m_middle = true;
+        //std::cout << "middle click pressed" << std::endl;
+        m_middle = true;
     }
     if (event->button == 3){
-	std::cout << "right click pressed" << std::endl;
-	m_right = true;
+        //std::cout << "right click pressed" << std::endl;
+        m_right = true;
     }
     self_mouse_rotate = m_left && !(m_middle || m_right);
     self_mouse_zoom = m_right && !(m_middle || m_left);
@@ -251,20 +253,28 @@ gboolean MyDrawArea::mouse_pressed(GtkWidget *widget, GdkEventButton *event, gpo
     self_mouse_y = event->y;
     pos(m_x, m_y, self_drag_pos_x, self_drag_pos_y, self_drag_pos_z);
     if ((event->button == 1) && (event->type == GDK_2BUTTON_PRESS)){
-	//nearest, hits = self.pick(x, self.get_allocation().height-1-y, self.pick_radius[0], self.pick_radius[1], event)
-	//selected = self.select(event, nearest, hits)
+        GtkAllocation alloc;
+        gtk_widget_get_allocation(widget, &alloc);
+        pick(m_x, alloc.height -1- m_y, 2, 2);
+        //nearest, hits = self.pick(x, self.get_allocation().height-1-y, self.pick_radius[0], self.pick_radius[1], event)
+        //selected = self.select(event, nearest, hits)
     }
     //if (selected != NULL){
-	//self.center_on_atom(selected.pos)
-	//self.zero_reference_point = selected.pos
-	//self.target_point = selected.pos
+        //self.center_on_atom(selected.pos)
+        //self.zero_reference_point = selected.pos
+        //self.target_point = selected.pos
     //}
     if ((event->button == 2) && (event->type == GDK_BUTTON_PRESS)){
-	//self.dist_cam_zpr = op.get_euclidean(self.zero_reference_point, self.get_cam_pos());
+        //self.dist_cam_zpr = op.get_euclidean(self.zero_reference_point, self.get_cam_pos());
+    }
+    if ((event->button == 3) && (event->type == GDK_BUTTON_PRESS)){
+        GtkAllocation alloc;
+        gtk_widget_get_allocation(widget, &alloc);
+        pick(m_x, alloc.height -1- m_y, 10, 10);
     }
     if ((event->button == 1) && (event->type == GDK_BUTTON_PRESS)){
-	self_pos_mouse[0] = m_x;
-	self_pos_mouse[1] = m_y;
+        self_pos_mouse[0] = m_x;
+        self_pos_mouse[1] = m_y;
     }
     return true;
 }
@@ -283,21 +293,84 @@ gboolean MyDrawArea::mouse_released(GtkWidget *widget, GdkEventButton *event, gp
     self_mouse_y = event->y;
     pos(m_x, m_y, self_drag_pos_x, self_drag_pos_y, self_drag_pos_z);
     if ((event->button == 1) && (event->type == GDK_BUTTON_RELEASE)){
-	if (self_dragging){
-	    self_dragging = false;
-	}
-	else{
-	    if (){
-		
-	    }
-	    
-	}
-	
-	
+        
+    }
+    if ((event->button == 2) && (event->type == GDK_BUTTON_RELEASE)){
+        if (self_dragging){
+            glMatrixMode(GL_MODELVIEW);
+            GLdouble modelview[4];
+            glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+            double dir_vec[3], cam_pos[3];
+            dir_vec[0] = -self_dist_cam_zpr * modelview[0];
+            dir_vec[1] = -self_dist_cam_zpr * modelview[1];
+            dir_vec[2] = -self_dist_cam_zpr * modelview[2];
+            get_cam_pos(cam_pos);
+            dir_vec[0] = cam_pos[0] + dir_vec[0];
+            dir_vec[1] = cam_pos[1] + dir_vec[1];
+            dir_vec[2] = cam_pos[2] + dir_vec[2];
+            self_zero_reference_point[0] = dir_vec[0];
+            self_zero_reference_point[1] = dir_vec[1];
+            self_zero_reference_point[2] = dir_vec[2];
+            self_dragging = false;
+        }
+        else{
+            //nearest, hits = self.pick(x, self.get_allocation().height-1-y, self.pick_radius[0], self.pick_radius[1], event)
+            //selected = self.select(event,nearest,hits)
+            //if selected is not None:
+                //self.center_on_atom(selected.pos)
+                //self.zero_reference_point = selected.pos
+                //self.target_point = selected.pos
+        }
     }
     
-    std::cout << "mouse released" << std::endl;
+    
+    //std::cout << "mouse released" << std::endl;
     return true;
+}
+
+void MyDrawArea::get_cam_pos(double *cam_pos){
+    /*
+     * 
+     */
+    GLdouble modelview[16], temp_mat[3];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    temp_mat[0] = modelview[12];
+    temp_mat[1] = modelview[13];
+    temp_mat[2] = modelview[14];
+    cam_pos[0] = -1.0 * (temp_mat[0]*modelview[0] + temp_mat[1]*modelview[1] + temp_mat[2]*modelview[2]);
+    cam_pos[1] = -1.0 * (temp_mat[0]*modelview[4] + temp_mat[1]*modelview[5] + temp_mat[2]*modelview[6]);
+    cam_pos[2] = -1.0 * (temp_mat[0]*modelview[8] + temp_mat[1]*modelview[9] + temp_mat[2]*modelview[10]);
+}
+
+void MyDrawArea::pick(double x, double y, double dx, double dy){
+    /*
+     * 
+     */
+    GLuint buff[256];
+    glSelectBuffer(256, buff);
+    glRenderMode(GL_SELECT);
+    glInitNames();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    GLdouble projection[16];
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glLoadIdentity();
+    gluPickMatrix(x, y, dx, dy, viewport);
+    glMultMatrixd(projection);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    //<----------->draw_to_pick();
+    draw();
+    glPopMatrix();
+    GLint hits = glRenderMode(GL_RENDER);
+    if (hits != 0){
+        std::cout << "something was picked" << std::endl;
+    }
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 }
 
 gboolean MyDrawArea::mouse_motion(GtkWidget *widget, GdkEventMotion *event, gpointer data){
@@ -312,7 +385,7 @@ gboolean MyDrawArea::mouse_scroll(GtkWidget *widget, GdkEventScroll *event, gpoi
     /*
      * 
      */
-    std::cout << "mouse scrolled" << std::endl;
+    //std::cout << "mouse scrolled" << std::endl;
     return true;
 }
 
@@ -344,17 +417,17 @@ bool MyDrawArea::draw_dots(){
     //GLunit gl_dot_li = glGenLists(1);
     //glNewList(gl_dot_li, GL_COMPILE);
     //if (self_frame != NULL){
-	//for (int i = 0; i < self_frame.atoms.size(); i++){
-	    //glPushMatri();
-	    //glPushName(self_frame.atoms[i].index);
-	    //glColor3f(0.0, 1.0, 0.0);
-	    //glPointSize(5);
-	    //glBegin(GL_POINTS);
-	    //glVertex3f(self_frame.atoms[i].pos[0], self_frame.atoms[i].pos[1], self_frame.atoms[i].pos[2]);
-	    //glEnd();
-	    //glPopName();
-	    //plPopMatrix();
-	//}
+    //for (int i = 0; i < self_frame.atoms.size(); i++){
+        //glPushMatri();
+        //glPushName(self_frame.atoms[i].index);
+        //glColor3f(0.0, 1.0, 0.0);
+        //glPointSize(5);
+        //glBegin(GL_POINTS);
+        //glVertex3f(self_frame.atoms[i].pos[0], self_frame.atoms[i].pos[1], self_frame.atoms[i].pos[2]);
+        //glEnd();
+        //glPopName();
+        //plPopMatrix();
+    //}
     //}
     //glEndList;
     return true;
