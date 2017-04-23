@@ -53,7 +53,12 @@ class MyDrawArea{
         static GLdouble self_fovy;
         static GLdouble self_z_near;
         static GLdouble self_z_far;
+        static GLdouble self_pitch;
+        static GLdouble self_yaw;
+        static GLdouble self_roll;
         static double self_dist_cam_zpr;
+        static double self_cam_pos[];
+        static double self_pick_rad[];
         // Mouse settings
         static bool self_mouse_rotate;
         static bool self_mouse_zoom;
@@ -70,9 +75,14 @@ class MyDrawArea{
         static double self_right;
         static double self_top;
         static double self_bottom;
-        static double self_zero_reference_point[3];
+        static double self_zrp[3];
         // Data
         static Frame self_data_frames;
+        // Draw lists
+        static std::vector<GLuint> self_gl_point_list;
+        // Draw flags
+        static bool self_dots;
+        
         // Methods
         static void realize(GtkWidget *widget, gpointer data);
         static void draw();
@@ -85,11 +95,12 @@ class MyDrawArea{
         static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data);
         
         static void pos(double wind_x, double wind_y, double &px, double &py, double &pz);
-        static void get_cam_pos(double *cam_pos);
+        static void get_cam_pos(double *pos);
         
         static void pick(double x, double y, double dx, double dy);
         
         static bool draw_dots();
+        static void load_mol();
 
 };
 

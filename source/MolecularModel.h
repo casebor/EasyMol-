@@ -34,22 +34,22 @@ class Atom{
      * Class description goes here
      */
     public:
-	
-	Atom(std::string at_name, int at_index, std::array<float, 3> at_pos);
-	Atom();
-	
+    
+    Atom(std::string at_name, int at_index, std::array<float, 3> at_pos);
+    Atom();
+    
         std::string name;
         int index;
-	std::array<float, 3> pos;
+    std::array<float, 3> pos;
         std::string symbol;
-	std::array<float, 3> color;
-	std::array<float, 3> col_rgb;
-	float radius;
-	float vdw_rad;
-	float cov_rad;
-	float ball_radius;
-	bool sphere;
-	bool dot;
+    std::array<float, 3> color;
+    std::array<float, 3> col_rgb;
+    float radius;
+    float vdw_rad;
+    float cov_rad;
+    float ball_radius;
+    bool sphere;
+    bool dot;
 };
 
 class Residue{
@@ -57,12 +57,12 @@ class Residue{
      * Class description goes here
      */
     public:
-	
-	Residue(std::string r_name, std::map<int, Atom> r_atoms, int r_index);
-	Residue();
-	
+    
+    Residue(std::string r_name, std::map<int, Atom> r_atoms, int r_index);
+    Residue();
+    
         std::string name;
-	std::map<int, Atom> atoms;
+    std::map<int, Atom> atoms;
         int index;
 };
 
@@ -71,12 +71,12 @@ class Chain{
      * Class description goes here
      */
     public:
-	
-	Chain(char ch_name, std::map<int, Residue> ch_residues);
-	Chain();
-	
+    
+    Chain(char ch_name, std::map<int, Residue> ch_residues);
+    Chain();
+    
         char name;
-	std::map<int, Residue> residues;
+    std::map<int, Residue> residues;
 };
 
 struct bond{
@@ -93,17 +93,17 @@ class Frame{
      */
     
     public:
-	
-	Frame(std::map<char, Chain> f_chains, std::array<float, 3> f_mass_center);
-	Frame();
-	
-	std::map<char, Chain> chains;
+    
+    Frame(std::map<char, Chain> f_chains, std::array<float, 3> f_mass_center);
+    Frame();
+    
+    std::map<char, Chain> chains;
         std::array<float, 3> mass_center;
-	std::vector<Atom> atoms;
-	std::vector<bond> bonds;
-	
-	void load_bonds();
-	void load_ribbons();
+    std::vector<Atom> atoms;
+    std::vector<bond> bonds;
+    
+    void load_bonds();
+    void load_ribbons();
 };
 
 #endif

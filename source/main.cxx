@@ -21,6 +21,8 @@
  * 
  */
 
+#include <Python.h>
+
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
 
@@ -40,17 +42,16 @@
 #include "parser.h"
 #include "functions.h"
 
-//void print_frame(Frame my_frame){
-    //Chain ch_temp = my_frame.chains['A'];
-    //for (Residue & res : get_values(ch_temp.residues)){
-	//for (Atom & atm : get_values(res.atoms)){
-	    //std::cout << "Name: " << atm.name;
-	    //std::cout << " Index: " << atm.index;
-	    //std::cout << " Residue: " << res.name;
-	    //std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
-	//}
-    //}
-//}
+void print_frame(Frame my_frame){
+    for (auto const& res : my_frame.chains['A'].residues){
+            for (auto const& atm : res.second.atoms){
+                std::cout << "Name: " << atm.second.name;
+                std::cout << " Index: " << atm.second.index;
+                std::cout << " Residue: " << res.second.name;
+                std::cout << " Pos xyz: " << atm.second.pos[0] << " / " << atm.second.pos[1] << " / " << atm.second.pos[2] << std::endl;
+            }
+        }
+}
 
 int main(int argc, char *argv[]){
     
@@ -66,39 +67,30 @@ int main(int argc, char *argv[]){
     MyDrawArea prueba;
     
     if (argv[1]!=NULL){
-	Frame parsed_file = parse_pdb(argv[1]);
-	//print_frame(parsed_file);
-	//Chain ch_temp = parsed_file.chains['A'];
-	//for (Residue & res : get_values(ch_temp.residues)){
-	    //for (Atom & atm : get_values(res.atoms)){
-		//std::cout << "Name: " << atm.name;
-		//std::cout << " Index: " << atm.index;
-		//std::cout << " Residue: " << res.name;
-		//std::cout << " Pos xyz: " << atm.pos[0] << " / " << atm.pos[1] << " / " << atm.pos[2] << std::endl;
-	    //}
-	//}
-	//parsed_file.bonds = generate_bonds(parsed_file.atoms);
-	//std::cout << parsed_file.chains['A'].residues[1].atoms[3].name << std::endl;
-	//for (int j = 0; j < parsed_file.atoms.size(); j++){
-	    //std::cout << parsed_file.atoms[j].name << std::endl;
-	//}
-	prueba.self_data_frames = parsed_file;
-	//for (int i = 0; i < parsed_file.chains['A'].residues.size(); i++){
-	    //for (int j = 0; j < parsed_file.chains['A'].residues[i].atoms.size(); j++){
-		//std::cout << parsed_file.chains['A'].residues[i].atoms[j].name << std::endl;
-	    //}
-	//}
+        Frame parsed_file = parse_pdb(argv[1]);
+        prueba.self_data_frames = parsed_file;
+        //print_frame(parsed_file);
     }
     else{
-	std::cout << "No pdb or incorrect pdb file passed" << std::endl;
-	return 0;
+        std::cout << "No pdb or incorrect pdb file passed" << std::endl;
+        return 0;
     }
-    
-    
-    
+    /**************************************************************************/
+    //wchar_t *program = Py_DecodeLocale(argv[0], NULL);
+    //if (program == NULL) {
+        //fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+        //exit(1);
+    //}
+    //Py_SetProgramName(program);
+    //Py_Initialize();
+    //PyRun_SimpleString("from time import time,ctime\n"
+                       //"print('Today is', ctime(time()))\n");
+    //Py_Finalize();
+    //PyMem_RawFree(program);
+    /**************************************************************************/
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     
-    gtk_widget_set_size_request (prueba.self_drawing_area, 200, 200);
+    gtk_widget_set_size_request (prueba.self_drawing_area, 420, 275);
     
     gtk_container_add (GTK_CONTAINER (window), prueba.self_drawing_area);
     

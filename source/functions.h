@@ -40,4 +40,9 @@ std::array<float, 3> cross_p(std::array<float, 3> vec_a, std::array<float, 3> ve
 
 std::vector<bond> generate_bonds(std::vector<Atom> atoms);
 
+double get_euclidean(double vec1[3], double vec2[3]);
+
+//void mat4_to_vec16(glm::mat4 *mat, GLdouble *vec);
+//void vec16_to_mat4(GLdouble *vec, glm::mat4 *mat);
+
 #endif
