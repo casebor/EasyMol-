@@ -64,6 +64,7 @@ class MyDrawArea{
         static bool self_mouse_zoom;
         static bool self_mouse_pan;
         static bool self_dragging;
+        static double self_scroll;
         static double self_mouse_x;
         static double self_mouse_y;
         static double self_drag_pos_x;
@@ -82,10 +83,8 @@ class MyDrawArea{
         static std::vector<GLuint> self_gl_point_list;
         // Draw flags
         static bool self_dots;
-        
-        // Methods
+        // Gtk2 methods
         static void realize(GtkWidget *widget, gpointer data);
-        static void draw();
         static gboolean reshape_wind(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
         static gboolean my_draw(GtkWidget *widget, GdkEventExpose *event, gpointer data);
         static gboolean mouse_pressed(GtkWidget *widget, GdkEventButton *event, gpointer data);
@@ -93,7 +92,10 @@ class MyDrawArea{
         static gboolean mouse_motion(GtkWidget *widget, GdkEventMotion *event, gpointer data);
         static gboolean mouse_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer data);
         static gboolean key_press(GtkWidget *widget, GdkEventKey *event, gpointer data);
-        
+        // Draw methods
+        static void draw();
+        static void draw_to_pick();
+        // Other methods
         static void pos(double wind_x, double wind_y, double &px, double &py, double &pz);
         static void get_cam_pos(double *pos);
         

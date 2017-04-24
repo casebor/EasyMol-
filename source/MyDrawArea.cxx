@@ -75,6 +75,7 @@ bool MyDrawArea::self_mouse_rotate = false;
 bool MyDrawArea::self_mouse_zoom = false;
 bool MyDrawArea::self_mouse_pan = false;
 bool MyDrawArea::self_dragging = false;
+double MyDrawArea::self_scroll = 1.0;
 double MyDrawArea::self_mouse_x = 0.0;
 double MyDrawArea::self_mouse_y = 0.0;
 double MyDrawArea::self_drag_pos_x = 0.0;
@@ -195,10 +196,12 @@ gboolean MyDrawArea::reshape_wind(GtkWidget *widget, GdkEventConfigure *event, g
     self_right = float(widget->allocation.width)/float(widget->allocation.height);
     self_left = -self_right;
     glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     gluPerspective(self_fovy, (float)widget->allocation.width/widget->allocation.height, self_z_near, self_z_far);
     glMatrixMode(GL_MODELVIEW);
     
     gdk_gl_drawable_gl_end (gl_drawable);
+    gtk_widget_queue_draw(widget);
     return true;
 }
 
@@ -210,7 +213,7 @@ gboolean MyDrawArea::my_draw(GtkWidget *widget, GdkEventExpose *event, gpointer 
     GdkGLDrawable *gl_drawable = gtk_widget_get_gl_drawable (widget);
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0,0,0,0);
+    glClearColor(self_bckgrnd_color[0], self_bckgrnd_color[1], self_bckgrnd_color[2], self_bckgrnd_color[3]);
     glMatrixMode(GL_MODELVIEW);
     
     draw();
@@ -233,6 +236,33 @@ void MyDrawArea::draw(){
      */
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(self_bckgrnd_color[0],self_bckgrnd_color[1],self_bckgrnd_color[2],self_bckgrnd_color[3]);
+    glMatrixMode(GL_MODELVIEW);
+    
+    if (self_dots)
+        glCallList(self_gl_point_list[0]);
+    
+    glFlush();
+    //float cube0[] = { 1, 0, 1};
+    //float cube1[] = {-1, 0, 1};
+    //float cube2[] = {-1, 1, 1};
+    //float cube3[] = { 1, 1, 1};
+    //glBegin(GL_TRIANGLES);
+    //glColor3f(0.0, 1.0, 1.0); glVertex3f(cube0[0], cube0[1], cube0[2]);
+    //glColor3f(0.0, 1.0, 1.0); glVertex3f(cube1[0], cube1[1], cube1[2]);
+    //glColor3f(0.0, 1.0, 1.0); glVertex3f(cube2[0], cube2[1], cube2[2]);
+    //glColor3f(0.0, 1.0, 1.0); glVertex3f(cube3[0], cube3[1], cube3[2]);
+    //glColor3f(0.0, 1.0, 1.0); glVertex3f(cube0[0], cube0[1], cube0[2]);
+    //glEnd();
+    
+}
+
+void MyDrawArea::draw_to_pick(){
+    /*
+     * The actual drawing goes here.
+     */
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(self_bckgrnd_color[0],self_bckgrnd_color[1],self_bckgrnd_color[2],self_bckgrnd_color[3]);
+    glMatrixMode(GL_MODELVIEW);
     
     if (self_dots)
         glCallList(self_gl_point_list[0]);
@@ -362,7 +392,9 @@ gboolean MyDrawArea::mouse_motion(GtkWidget *widget, GdkEventMotion *event, gpoi
             bx = modelview[0]*dy + modelview[1]*dx;
             by = modelview[4]*dy + modelview[5]*dx;
             bz = modelview[8]*dy + modelview[9]*dx;
+            glTranslatef(self_zrp[0], self_zrp[1], self_zrp[2]);
             glRotatef(angle,bx,by,bz);
+            glTranslatef(-self_zrp[0], -self_zrp[1], -self_zrp[2]);
             changed = true;
         }
         else{
@@ -425,7 +457,7 @@ gboolean MyDrawArea::mouse_released(GtkWidget *widget, GdkEventButton *event, gp
             glMatrixMode(GL_MODELVIEW);
             GLdouble modelview[16];
             glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-            double dir_vec[3] = {modelview[8], modelview[9], modelview[10]};
+            double dir_vec[3] = {modelview[2], modelview[6], modelview[10]};
             double cam_pos[3];
             get_cam_pos(cam_pos);
             for (int i = 0; i < 3; i++)
@@ -433,7 +465,7 @@ gboolean MyDrawArea::mouse_released(GtkWidget *widget, GdkEventButton *event, gp
             double new_zrp[3] = {cam_pos[0]+dir_vec[0], cam_pos[1]+dir_vec[1], cam_pos[2]+dir_vec[2]};
             for (int i = 0; i < 3; i++)
                 self_zrp[i] = new_zrp[i];
-            
+            //glTranslatef(self_zrp[0], self_zrp[1], self_zrp[2]);
             
             //dir_vec[0] = -self_dist_cam_zpr * modelview[0];
             //dir_vec[1] = -self_dist_cam_zpr * modelview[1];
@@ -525,7 +557,33 @@ gboolean MyDrawArea::mouse_scroll(GtkWidget *widget, GdkEventScroll *event, gpoi
     /*
      * 
      */
-    //std::cout << "mouse scrolled" << std::endl;
+    if (event->direction == GDK_SCROLL_DOWN){
+        self_z_near += self_scroll;
+        self_z_far -= self_scroll;
+        self_fog_start -= self_scroll;
+        self_fog_end -= self_scroll;
+    }
+    if (event->direction == GDK_SCROLL_UP){
+        if (self_z_near >= self_z_far)
+            return true;
+        else{
+            self_z_near -= self_scroll;
+            self_z_far += self_scroll;
+            self_fog_start += self_scroll;
+            self_fog_end += self_scroll;
+        }
+    }
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (self_z_near >= 0.1)
+        gluPerspective(self_fovy, double(widget->allocation.width)/double(widget->allocation.height), self_z_near, self_z_far);
+    else
+        gluPerspective(self_fovy, double(widget->allocation.width)/double(widget->allocation.height), 0.1, self_z_far);
+    glFogf(GL_FOG_START, self_fog_start);
+    glFogf(GL_FOG_END, self_fog_end);
+    glMatrixMode(GL_MODELVIEW);
+    gtk_widget_queue_draw(widget);
     return true;
 }
 

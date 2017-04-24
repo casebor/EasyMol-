@@ -48,7 +48,8 @@ void print_frame(Frame my_frame){
                 std::cout << "Name: " << atm.second.name;
                 std::cout << " Index: " << atm.second.index;
                 std::cout << " Residue: " << res.second.name;
-                std::cout << " Pos xyz: " << atm.second.pos[0] << " / " << atm.second.pos[1] << " / " << atm.second.pos[2] << std::endl;
+                //std::cout << " Pos xyz: " << atm.second.pos[0] << " / " << atm.second.pos[1] << " / " << atm.second.pos[2] << std::endl;
+                std::cout << " Color RGB: " << atm.second.color[0] << " / " << atm.second.color[1] << " / " << atm.second.color[2] << std::endl;
             }
         }
 }
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]){
     if (argv[1]!=NULL){
         Frame parsed_file = parse_pdb(argv[1]);
         prueba.self_data_frames = parsed_file;
-        //print_frame(parsed_file);
+        print_frame(parsed_file);
     }
     else{
         std::cout << "No pdb or incorrect pdb file passed" << std::endl;
